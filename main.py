@@ -81,8 +81,8 @@ Monster("&#$@?#}&%", 2500,1500, 5000, 1000)]
 
 weapon_shop = [
 Weapon("Лопата",  10,  10,  0),
-Weapon("Ржавый меч",  60,  30,  0),
-Weapon("Катана", 100, 60, 0),
+Weapon("Ржавый меч",  60,  40,  0),
+Weapon("Катана", 100, 100, 0),
 Weapon('Меч "Убийца Демонов"', 1000, 500, 0)
 ]
 
@@ -93,16 +93,33 @@ Weapon("Посох скверны", 200, 0, 130)
 ]
 
 def open_inventory(hero):
-    print(f"---------------------------\nВ руках:{hero.equipped_weapon.name} (Урон:{hero.equipped_weapon.power})")
-    print(f"Инвентарь: {hero.inventory}")
-    input("Нажмите Enter для выхода...")
+    while True:
+        print(f"---------------------------\nВ руках:{hero.equipped_weapon.name} (Урон:{hero.equipped_weapon.power})")
+        print("Инвентарь:")
+        if not hero.inventory:
+            print("Пусто")
+        else:
+            for weapon in hero.inventory:
+                print(f"- {weapon.name}, Урон: {weapon.power}")
+        print("1.Применить лучшее оружие")
+        print("2.Выйти из инвентаря")
+        choice = input("Выберите действие: ")
+        if choice == "1":
+            best_weapon = hero.equipped_weapon
+            for weapon in hero.inventory:
+                if weapon.power > best_weapon.power:
+                    best_weapon = weapon
+            print(f"{best_weapon.name} применен")
+            hero.equipped_weapon = best_weapon
+        if choice == "2":
+            break
 
 def open_weapon_shop(hero):
     while True:
         print(f"---------------------------\nТвое золото: {hero.gold}")
         print("0.Выход")
         for i, weapon in enumerate(weapon_shop, start=1):
-            print(f"{i}.{weapon.name}, Урон:{weapon.power}, Цена:{weapon.gold_price}")
+            print(f"{i}.{weapon.name}, Урон:{weapon.power}, Цена: {weapon.gold_price} Золота")
         choice = input(f"Выберите действие(0-{len(weapon_shop)})")
         if choice == "0":
             break
@@ -127,7 +144,7 @@ def open_workbench(hero):
         print(f"---------------------------\nТвой Моб-Лут: {hero.mob_loot}")
         print("0.Выход")
         for i, weapon in enumerate(workbench, start=1):
-            print(f"{i}.{weapon.name}, Урон:{weapon.power}, Цена:{weapon.loot_price}")
+            print(f"{i}.{weapon.name}, Урон:{weapon.power}, Цена: {weapon.loot_price} Моб-Лута")
         choice = input(f"Выберите действие(0-{len(workbench)})")
         if choice == "0":
             break
@@ -152,8 +169,8 @@ def open_shop(hero, current_level):
         print(f"Твои ресурсы:{hero.gold} Золота, {hero.mob_loot} Моб-Лута")
         print("1.Купить зелье Регенерации(+50 HP) - 10 Золота")
         print("2.Купить зелье Здоровья(+30 к макс.HP) - 20 Золота")
-        print("3.Верстак")
-        print('4.Магазин оружия')
+        print("3.Верстак(Моб-Лут)")
+        print('4.Магазин оружия(Золото)')
         print('5.Открыть инвентарь')
         print("6.Покинуть магазин")
         print("7.Сохранить и выйти")
@@ -184,7 +201,7 @@ def open_shop(hero, current_level):
             break
         elif choice == "7":
             with open("save.txt", "w", encoding="utf8") as file:
-                file.write(f"{hero.gold},{hero.power}, {hero.max_hp}, {current_level}, {hero.mob_loot}")
+                file.write(f"{hero.gold},{hero.power}, {hero.max_hp}, {current_level}, {hero.mob_loot}, {hero.equipped_weapon.name}")
             quit()
         else:
             print("Неверный ввод >=( ")
@@ -198,8 +215,12 @@ try:
         max_hp = int(data[2])
         level_index = int(data[3])
         mob_loot = int(data[4])
+        weapon_name = data[5]
         my_hero = Hero("Хиро", max_hp, power, gold, mob_loot)
-        #current_level:file.write(f"{hero.gold},{hero.power},{max_hp},{level_index}")
+        for w in weapon_shop + workbench:
+            if w.name == weapon_name:
+                my_hero.equipped_weapon = w
+                break
 except:
     my_hero = Hero("Хиро", 100, 20, 50, 0)
     print(f"---------------------------\nСоздан герой {my_hero.name}, у него {my_hero.gold} золота\n---------------------------")
